@@ -7,6 +7,10 @@ if __name__ == '__main__':
     bpy.data.scenes["Scene"].cycles.device = "GPU"
     for d in bpy.context.preferences.addons["cycles"].preferences.devices:
         d["use"] = 1 # Using all devices, include GPU and CPU
+    
+    bpy.data.scenes["Scene"].cycles.progressive = "BRANCHED_PATH"
+    bpy.data.scenes["Scene"].cycles.aa_samples = 256
+    bpy.data.scenes["Scene"].cycles.preview_aa_samples = 128
 
     bpy.data.scenes["Scene"].render.filepath = "FILE_ROOT_PATH"
     bpy.data.scenes["Scene"].render.fps = 30

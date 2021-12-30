@@ -9,3 +9,7 @@
 1. 「スクリプト実行ボタン」を押下
 1. Animationタブにて「3Dビュー」を「レンダー」に変更
 1. 再生ボタンを押して、アニメーションを確認
+
+## License
+### 魔法陣画像
+[daisy_spread_image](https://github.com/MichinariNukazawa/daisy_spread_image/releases/tag/v0.0.4)

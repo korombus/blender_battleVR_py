@@ -65,6 +65,5 @@ if __name__ == '__main__':
     # 赤、青、緑、黄色
     colors = [(1,0,0,1),(0,0,1,1),(0,1,0,1),(1,1,0,1)]
 
-
     # 4色の中からランダムで選択
     MaterialMagic(C,D,colors[random.randint(0,3)])
