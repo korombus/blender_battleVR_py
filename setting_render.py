@@ -2,6 +2,14 @@ if __name__ == '__main__':
     # レンダリング設定
     bpy.data.scenes["Scene"].render.engine = "CYCLES"
 
+    # 解像度
+    bpy.data.scenes["Scene"].render.resolution_x = 1920
+    bpy.data.scenes["Scene"].render.resolution_y = 960
+
+    # レンダリングタイルの大きさを設定
+    bpy.data.scenes["Scene"].render.tile_x = 300
+    bpy.data.scenes["Scene"].render.tile_y = 300
+
     # レンダリング用のGPUを設定
     bpy.context.preferences.addons["cycles"].preferences.compute_device_type = "CUDA"
     bpy.data.scenes["Scene"].cycles.device = "GPU"

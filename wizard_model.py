@@ -1,8 +1,9 @@
 import math
 
-def WizardHead(C,D,color,pos,rot):
+def WizardHead(C,D,type,color,pos,rot):
     # モンキーを生成
     bpy.ops.mesh.primitive_monkey_add(location=pos, rotation=rot)
+    C.active_object.name = "Wizard_" + type
     
     # マテリアルを設定
     material_glass = D.materials.new("wizard_head")
@@ -93,12 +94,12 @@ def WizardBody(C,D,color):
     C.object.data.materials.append(material_glass)
 
 
-def WizardModel(color, pos, rot):
+def WizardModel(type, color, pos, rot):
     C = bpy.context
     D = bpy.data
 
     # 頭部分を生成
-    WizardHead(C,D,color,pos, rot)
+    WizardHead(C,D,type, color,pos, rot)
     # 頭オブジェクトを事前に取得
     head_obj = C.active_object
     
@@ -112,7 +113,7 @@ if __name__ == '__main__':
     ROTATE = 2*math.pi/360
 
     # 味方の魔法使い(青)
-    WizardModel((0,0,1,1), (0,10,1.5), (0,0,0))
+    WizardModel("Ally", (0,0,1,1), (0,40,1.5), (0,0,0))
 
     # 敵の魔法使い(赤)
-    WizardModel((1,0,0,1), (0,-10,1.5), (0,0,180*ROTATE))
+    WizardModel("Enemy", (1,0,0,1), (0,-40,1.5), (0,0,180*ROTATE))

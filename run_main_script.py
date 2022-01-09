@@ -1,6 +1,4 @@
 import bpy
-import random
-import math
 
 ## 固定値設定 #############################################################
 # 実行ファイルパス一覧
@@ -10,6 +8,7 @@ magicobj_file_name = FILE_ROOT_PATH + "magic_model.py"
 fieldins_file_name = FILE_ROOT_PATH + "field_model.py"
 wizardob_file_name = FILE_ROOT_PATH + "wizard_model.py"
 witchcft_file_name = FILE_ROOT_PATH + "witchcraft_model.py"
+camerast_file_name = FILE_ROOT_PATH + "camera_setting.py"
 
 # SEファイルパス一覧
 SE_ROOT_PATH = FILE_ROOT_PATH + 'se/'
@@ -27,7 +26,7 @@ witchcraft_img_name = (
 )
 
 # シーンのエンドフレーム
-FRAME_END = 600
+FRAME_END = 130
 ##########################################################################
 
 #オブジェクト全選択
@@ -40,8 +39,14 @@ if bpy.context.scene.sequence_editor:
     bpy.context.scene.sequence_editor_clear()
 bpy.context.scene.sequence_editor_create()
 
+# 最終フレームを設定
+bpy.data.scenes["Scene"].frame_end = FRAME_END
+
 # レンダリング設定
 exec(compile(open(setrendr_file_name).read().replace("FILE_ROOT_PATH", FILE_ROOT_PATH), setrendr_file_name, 'exec'))
+
+# カメラを生成
+exec(compile(open(camerast_file_name).read(), camerast_file_name, 'exec'))
 
 # フィールドを生成
 exec(compile(open(fieldins_file_name).read(), fieldins_file_name, 'exec'))

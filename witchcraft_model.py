@@ -1,8 +1,9 @@
 import random
 
-def CreateWitchCraftModel(C,D,color,pos,rot):
+def CreateWitchCraftModel(C,D,type,color,pos,rot):
     # 魔法陣のためのPlaneを追加
     bpy.ops.mesh.primitive_plane_add(size=5, location=pos, rotation=rot)
+    C.active_object.name = "Witchcraft_" + type
 
     # マテリアルを設定
     material_glass = D.materials.new("witchcraft")
@@ -81,16 +82,16 @@ if __name__ == '__main__':
 
     # 味方の魔法陣を生成
     for ally_witchcraft in range(ally_witchcraft_num):
-        pos = (random.uniform(-5,5), 13, random.uniform(4, 15))
+        pos = (random.uniform(-5,5), D.objects["Wizard_Ally"].location.y + 13, random.uniform(4, 15))
         rot = (90*ROTATE,0,0)
         # 魔法陣を生成
-        CreateWitchCraftModel(C,D,colors[random.randint(0,3)],pos,rot)
+        CreateWitchCraftModel(C,D,"Ally",colors[random.randint(0,3)],pos,rot)
 
     # 敵の魔法陣を生成
     for enemy_witchcraft in range(enemy_witchcraft_num):
-        pos = (random.uniform(-5,5), -13, random.uniform(4, 15))
+        pos = (random.uniform(-5,5), D.objects["Wizard_Enemy"].location.y - 13, random.uniform(4, 15))
         rot = (-90*ROTATE,0,0)
-        CreateWitchCraftModel(C,D,colors[random.randint(0,3)],pos,rot)
+        CreateWitchCraftModel(C,D,"Enemy",colors[random.randint(0,3)],pos,rot)
 
     # 魔法陣範囲
     # 味方

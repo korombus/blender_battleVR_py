@@ -1,6 +1,6 @@
 import random
 
-def CreateStarObject(C,D):
+def CreateStarObject(C,D,pos=(0,0,0)):
     # 頂点座標
     verts = [[0.0015, -0.0034, 0.4340],[0.0000, 1.0000, 0.0000],[-0.2067, 0.2845, 0.0000],[-0.9511, 0.3090, 0.0000],
             [-0.3345, -0.1087, 0.0000],[-0.5878, -0.8090, 0.0000],[0.0000, -0.3517, 0.0000],[0.5878, -0.8090, 0.0000],
@@ -18,7 +18,7 @@ def CreateStarObject(C,D):
 
     # 星形のオブジェクトを生成
     star_obj = D.objects.new(name="magic_star", object_data=star_msh)
-    star_obj.location = (0, 0, -1000)
+    star_obj.location = pos
 
     # オブジェクトをシーンコレクションへリンク
     C.collection.objects.link(star_obj)
@@ -27,9 +27,9 @@ def CreateStarObject(C,D):
     # オブジェクトをアクティブにする
     C.view_layer.objects.active = star_obj
 
-def MaterialMagic(C,D,color):
-    # 魔法のパーティクルオブジェクトを生成
-    CreateStarObject(C,D)
+def MaterialMagic(C,D,color,pos=(0,0,0)):
+    # 魔法のオブジェクトを生成
+    CreateStarObject(C,D,pos)
     
     # マテリアルを新たに設定
     material_glass = D.materials.new('Magic_Particle_Material')
@@ -58,6 +58,75 @@ def MaterialMagic(C,D,color):
     # マテリアルを追加
     C.object.data.materials.append(material_glass)
 
+def CreateMagicParticle(C,D,color):
+    # パーティクルを設定する魔法を事前に取得
+    magic_obj = C.active_object
+
+    # パーティクル用の魔法オブジェクトを生成
+    MaterialMagic(C,D,color,(0,0,1000))
+    particle_obj = C.active_object
+
+    # アクティブオブジェクトを魔法に切り替え
+    C.view_layer.objects.active = magic_obj
+
+    # パーティクルシステムを追加
+    bpy.ops.object.particle_system_add()
+
+    # パーティクルを設定
+    p_s = C.active_object.particle_systems[0].settings
+
+    # 放射
+    p_s.count = 30
+    p_s.frame_start = 80
+    p_s.frame_end = 94
+    p_s.lifetime = 20
+    
+    # 速度
+    p_s.normal_factor = 7.0
+
+    # レンダー
+    p_s.render_type = 'OBJECT'
+    p_s.particle_size = 0.5
+    p_s.instance_object = particle_obj
+
+    # フィールドの重み
+    p_s.effector_weights.gravity = 0
+
+def CreateMagicAnimation(C,D,end_frame_pos):
+    # 魔法を撃ち出して、着弾するまでのアニメーションを設定
+
+    # アニメーションさせる魔法を取得
+    magic_obj = C.active_object
+
+    # 初期フレーム
+    C.scene.frame_set(0)
+    magic_obj.location = (0, 0, 0)
+    magic_obj.show_instancer_for_viewport = False
+    magic_obj.show_instancer_for_render = False
+    magic_obj.keyframe_insert(data_path="location", index=-1)
+    magic_obj.keyframe_insert(data_path="show_instancer_for_viewport", index=-1)
+    magic_obj.keyframe_insert(data_path="show_instancer_for_render", index=-1)
+
+    # 撃ち出し始めの出現
+    C.scene.frame_set(40)
+    magic_obj.location = (0, 0, 0)
+    magic_obj.show_instancer_for_viewport = True
+    magic_obj.show_instancer_for_render = True
+    magic_obj.keyframe_insert(data_path="location", index=-1)
+    magic_obj.keyframe_insert(data_path="show_instancer_for_viewport", index=-1)
+    magic_obj.keyframe_insert(data_path="show_instancer_for_render", index=-1)
+
+    # 着弾したら非表示にする
+    C.scene.frame_set(78)
+    magic_obj.location = end_frame_pos
+    magic_obj.show_instancer_for_viewport = False
+    magic_obj.show_instancer_for_render = False
+    magic_obj.keyframe_insert(data_path="location", index=-1)
+    magic_obj.keyframe_insert(data_path="show_instancer_for_viewport", index=-1)
+    magic_obj.keyframe_insert(data_path="show_instancer_for_render", index=-1)
+
+    pass
+
 if __name__ == '__main__':
     C = bpy.context
     D = bpy.data
@@ -65,5 +134,33 @@ if __name__ == '__main__':
     # 赤、青、緑、黄色
     colors = [(1,0,0,1),(0,0,1,1),(0,1,0,1),(1,1,0,1)]
 
-    # 4色の中からランダムで選択
-    MaterialMagic(C,D,colors[random.randint(0,3)])
+    # 魔法陣のオブジェクト一覧を抽出
+    # 魔法陣と同じ位置に魔法を作り出す
+    witchcraft_object_list = [ obj for obj in D.objects if "Witchcraft" in obj.name ]
+
+    # 魔法陣すべてに魔法を充填
+    for witchcraft in witchcraft_object_list:
+        # 4色の中からランダムで選択
+        choice_color = colors[random.randint(0,3)]
+        # 魔法を生成
+        MaterialMagic(C,D,choice_color)
+
+        # 魔法陣を魔法の親に設定
+        C.active_object.parent = witchcraft
+
+        # 魔法にパーティクルを設定
+        CreateMagicParticle(C,D,choice_color)
+
+        # 魔法にアニメーションを設定
+        # アニメーションの終着位置を計算
+        # 向かう方向が敵と味方で計算方法が違うため条件を分ける
+        # また、魔法陣はx軸方向に90度回転させているので、zとyが入れ替わる点に注意
+        # 魔法陣の座標を(x,y,z), 魔法使いの座標を(Wx,Wy,Wz)とすると
+        # 味方：-x, -z+Wz, y+Wy
+        # 敵　：-x, z-Wz, -y-Wy
+        if "Ally" in witchcraft.name:
+            end_frame_pos = (-witchcraft.location.x, -witchcraft.location.z + D.objects["Wizard_Ally"].location.z, witchcraft.location.y + D.objects["Wizard_Ally"].location.y)
+        else:
+            end_frame_pos = (-witchcraft.location.x, witchcraft.location.z - D.objects["Wizard_Enemy"].location.z, -witchcraft.location.y - D.objects["Wizard_Enemy"].location.y)
+        
+        CreateMagicAnimation(C,D,end_frame_pos)
