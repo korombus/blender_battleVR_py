@@ -1,5 +1,3 @@
-import random
-
 def CreateWitchCraftModel(C,D,type,color,pos,rot):
     # 魔法陣のためのPlaneを追加
     bpy.ops.mesh.primitive_plane_add(size=5, location=pos, rotation=rot)
@@ -73,9 +71,9 @@ if __name__ == '__main__':
     ROTATE = 2*math.pi/360
 
     # 味方の魔法陣数
-    ally_witchcraft_num = 5
+    ally_witchcraft_num = 10
     # 敵の魔法陣数
-    enemy_witchcraft_num = 5
+    enemy_witchcraft_num = 10
     
     # 赤、青、緑、黄色
     colors = [(1,0,0,1),(0,0,1,1),(0,1,0,1),(1,1,0,1)]

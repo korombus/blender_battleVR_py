@@ -1,5 +1,3 @@
-import math
-
 def WizardHead(C,D,type,color,pos,rot):
     # モンキーを生成
     bpy.ops.mesh.primitive_monkey_add(location=pos, rotation=rot)
@@ -113,7 +111,7 @@ if __name__ == '__main__':
     ROTATE = 2*math.pi/360
 
     # 味方の魔法使い(青)
-    WizardModel("Ally", (0,0,1,1), (0,40,1.5), (0,0,0))
+    WizardModel("Ally", (0,0,1,1), (0,20,1.5), (0,0,0))
 
     # 敵の魔法使い(赤)
-    WizardModel("Enemy", (1,0,0,1), (0,-40,1.5), (0,0,180*ROTATE))
+    WizardModel("Enemy", (1,0,0,1), (0,-20,1.5), (0,0,180*ROTATE))

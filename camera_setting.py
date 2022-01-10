@@ -1,5 +1,3 @@
-import math
-
 def CameraSetting(C,D):
     # 回転はラジアンに直す必要があるので、そのための定数を用意
     ROTATE = 2*math.pi/360

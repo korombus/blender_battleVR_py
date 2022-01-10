@@ -58,7 +58,7 @@ def MaterialMagic(C,D,color,pos=(0,0,0)):
     # マテリアルを追加
     C.object.data.materials.append(material_glass)
 
-def CreateMagicParticle(C,D,color):
+def CreateMagicParticle(C,D,color, start_frame):
     # パーティクルを設定する魔法を事前に取得
     magic_obj = C.active_object
 
@@ -73,12 +73,12 @@ def CreateMagicParticle(C,D,color):
     bpy.ops.object.particle_system_add()
 
     # パーティクルを設定
-    p_s = C.active_object.particle_systems[0].settings
+    p_s = magic_obj.particle_systems[0].settings
 
     # 放射
     p_s.count = 30
-    p_s.frame_start = 80
-    p_s.frame_end = 94
+    p_s.frame_start = start_frame
+    p_s.frame_end = start_frame + 14
     p_s.lifetime = 20
     
     # 速度
@@ -92,23 +92,48 @@ def CreateMagicParticle(C,D,color):
     # フィールドの重み
     p_s.effector_weights.gravity = 0
 
-def CreateMagicAnimation(C,D,end_frame_pos):
+def CreateWitchcraftAnimation(C,D, wc_obj, start_frame, end_frame):
+    # 魔法陣の出現アニメーション
+
+    # 回転はラジアンに直す必要があるので、そのための定数を用意
+    ROTATE = 2*math.pi/360
+
+    # 初期フレーム
+    C.scene.frame_set(start_frame)
+    wc_obj.rotation_euler[1] = 180 * ROTATE
+    wc_obj.scale[0] = 0
+    wc_obj.scale[1] = 0
+    wc_obj.scale[2] = 0
+    wc_obj.keyframe_insert(data_path="rotation_euler", index=-1)
+    wc_obj.keyframe_insert(data_path="scale", index=-1)
+
+    # 表示フレーム
+    C.scene.frame_set(end_frame)
+    wc_obj.rotation_euler[1] = 0
+    wc_obj.scale[0] = 1
+    wc_obj.scale[1] = 1
+    wc_obj.scale[2] = 1
+    wc_obj.keyframe_insert(data_path="rotation_euler", index=-1)
+    wc_obj.keyframe_insert(data_path="scale", index=-1)
+
+
+def CreateMagicAnimation(C,D,end_frame_pos, start_frame, end_frame):
     # 魔法を撃ち出して、着弾するまでのアニメーションを設定
 
     # アニメーションさせる魔法を取得
     magic_obj = C.active_object
 
     # 初期フレーム
-    C.scene.frame_set(0)
+    C.scene.frame_set(start_frame)
     magic_obj.location = (0, 0, 0)
-    magic_obj.show_instancer_for_viewport = False
-    magic_obj.show_instancer_for_render = False
+    magic_obj.show_instancer_for_viewport = True
+    magic_obj.show_instancer_for_render = True
     magic_obj.keyframe_insert(data_path="location", index=-1)
     magic_obj.keyframe_insert(data_path="show_instancer_for_viewport", index=-1)
     magic_obj.keyframe_insert(data_path="show_instancer_for_render", index=-1)
 
     # 撃ち出し始めの出現
-    C.scene.frame_set(40)
+    C.scene.frame_set(int(end_frame / 2))
     magic_obj.location = (0, 0, 0)
     magic_obj.show_instancer_for_viewport = True
     magic_obj.show_instancer_for_render = True
@@ -117,15 +142,13 @@ def CreateMagicAnimation(C,D,end_frame_pos):
     magic_obj.keyframe_insert(data_path="show_instancer_for_render", index=-1)
 
     # 着弾したら非表示にする
-    C.scene.frame_set(78)
+    C.scene.frame_set(end_frame - 2)
     magic_obj.location = end_frame_pos
     magic_obj.show_instancer_for_viewport = False
     magic_obj.show_instancer_for_render = False
     magic_obj.keyframe_insert(data_path="location", index=-1)
     magic_obj.keyframe_insert(data_path="show_instancer_for_viewport", index=-1)
     magic_obj.keyframe_insert(data_path="show_instancer_for_render", index=-1)
-
-    pass
 
 if __name__ == '__main__':
     C = bpy.context
@@ -138,6 +161,10 @@ if __name__ == '__main__':
     # 魔法陣と同じ位置に魔法を作り出す
     witchcraft_object_list = [ obj for obj in D.objects if "Witchcraft" in obj.name ]
 
+    start_frame = 0
+    end_frame = 80
+    threshold_frame = 20
+
     # 魔法陣すべてに魔法を充填
     for witchcraft in witchcraft_object_list:
         # 4色の中からランダムで選択
@@ -148,8 +175,11 @@ if __name__ == '__main__':
         # 魔法陣を魔法の親に設定
         C.active_object.parent = witchcraft
 
+        # 魔法陣にアニメーションを設定
+        CreateWitchcraftAnimation(C,D,witchcraft,start_frame,start_frame + threshold_frame)
+
         # 魔法にパーティクルを設定
-        CreateMagicParticle(C,D,choice_color)
+        CreateMagicParticle(C,D,choice_color,end_frame)
 
         # 魔法にアニメーションを設定
         # アニメーションの終着位置を計算
@@ -159,8 +189,12 @@ if __name__ == '__main__':
         # 味方：-x, -z+Wz, y+Wy
         # 敵　：-x, z-Wz, -y-Wy
         if "Ally" in witchcraft.name:
-            end_frame_pos = (-witchcraft.location.x, -witchcraft.location.z + D.objects["Wizard_Ally"].location.z, witchcraft.location.y + D.objects["Wizard_Ally"].location.y)
+            end_frame_pos = (-witchcraft.location.x, -witchcraft.location.z + D.objects["Wizard_Ally"].location.z, witchcraft.location.y + D.objects["Wizard_Ally"].location.y - 1)
         else:
-            end_frame_pos = (-witchcraft.location.x, witchcraft.location.z - D.objects["Wizard_Enemy"].location.z, -witchcraft.location.y - D.objects["Wizard_Enemy"].location.y)
+            end_frame_pos = (-witchcraft.location.x, witchcraft.location.z - D.objects["Wizard_Enemy"].location.z, -witchcraft.location.y - D.objects["Wizard_Enemy"].location.y + 1)
         
-        CreateMagicAnimation(C,D,end_frame_pos)
+        # 魔法にアニメーションを設定
+        CreateMagicAnimation(C,D,end_frame_pos,start_frame,end_frame)
+
+        start_frame += threshold_frame
+        end_frame += threshold_frame
